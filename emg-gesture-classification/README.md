@@ -6,29 +6,29 @@ UCI **EMG Data for Gestures** 데이터셋 (8채널 sEMG, 36명 피험자, 4.2M 
 
 | # | 환경 | 작업 방식 |
 |---|---|---|
-| 1 | **Gemini LLM** | Docker 위 Jupyter Notebook에서 사람이 직접 LLM과 대화하며 작성 |
-| 2 | **Google Antigravity** | 에이전트가 자동으로 Python 스크립트 작성 + 실행 |
-| 3 | **Claude Cowork** | 에이전트가 자동으로 전처리/학습/평가 + 보고서 생성 |
+| 1 | **Gemini(chat) + 본인** | Docker 위 Jupyter Notebook에서 사람이 직접 LLM과 대화하며 작성 |
+| 2 | **Antigravity(Gemini)** | 에이전트가 자동으로 Python 스크립트 작성 + 실행 |
+| 3 | **Cowork(Claude)** | 에이전트가 자동으로 전처리/학습/평가 + 보고서 생성 |
 
 ## 결과 한눈에 보기
 
 | 접근법 | 모델 | 라이브러리 | 클래스 | 윈도우 | 평가 프로토콜 | **테스트/검증 Acc** |
 |---|---|---|---|---|---|---|
-| Gemini v1 | 1D-CNN | PyTorch | 7 (1-7) | 64 / step 32 | **Subject-independent** | **91.51%** |
-| Gemini v2 | 1D-CNN + BiLSTM (Label Smoothing) | PyTorch | 7 (1-7) | 128 / step 64 | **Subject-independent** | **93.18%** |
-| Antigravity | 1D-CNN (128→256→512) | PyTorch + sklearn | 7 (1-7) | 200 / step 50 | Mixed-subject random | **96.08%** |
-| Claude Cowork | MLP + handcrafted features | **numpy only** | 6 (1-6) | 50 / step 10 | Mixed-subject stratified | **96.99%** |
+| Gemini(chat) + 본인 v1 | 1D-CNN | PyTorch | 7 (1-7) | 64 / step 32 | **Subject-independent** | **91.51%** |
+| Gemini(chat) + 본인 v2 | 1D-CNN + BiLSTM (Label Smoothing) | PyTorch | 7 (1-7) | 128 / step 64 | **Subject-independent** | **93.18%** |
+| Antigravity(Gemini) | 1D-CNN (128→256→512) | PyTorch + sklearn | 7 (1-7) | 200 / step 50 | Mixed-subject random | **96.08%** |
+| Cowork(Claude) | MLP + handcrafted features | **numpy only** | 6 (1-6) | 50 / step 10 | Mixed-subject stratified | **96.99%** |
 
 ### 평가 프로토콜 차이 — 꼭 읽어주세요
 
 세 접근법의 정확도를 그대로 비교하면 안 됩니다. 평가 방식이 다릅니다.
 
-- **Subject-independent (Gemini)** — 학습에 안 쓴 피험자 6명으로만 검증. 실제 새 사용자에게 모델을 배포했을 때의 성능에 가깝습니다. **더 어렵습니다.**
-- **Mixed-subject (Antigravity, Cowork)** — 같은 피험자의 데이터가 train/test에 섞임. 동일 사용자 캘리브레이션 시나리오에 해당합니다. 윈도우 overlap이 있으면 더더욱 쉬워집니다.
+- **Subject-independent (Gemini(chat) + 본인)** — 학습에 안 쓴 피험자 6명으로만 검증. 실제 새 사용자에게 모델을 배포했을 때의 성능에 가깝습니다. **더 어렵습니다.**
+- **Mixed-subject (Antigravity(Gemini), Cowork(Claude))** — 같은 피험자의 데이터가 train/test에 섞임. 동일 사용자 캘리브레이션 시나리오에 해당합니다. 윈도우 overlap이 있으면 더더욱 쉬워집니다.
 
-같은 프로토콜에서 비교하면 순위가 바뀔 가능성이 높습니다. Cowork의 97%는 *protocol advantage*가 일부 포함된 숫자입니다.
+같은 프로토콜에서 비교하면 순위가 바뀔 가능성이 높습니다. Cowork(Claude)의 97%는 *protocol advantage*가 일부 포함된 숫자입니다.
 
-또한 Cowork은 class 0(unmarked)과 class 7(희소)을 제거한 6-class 프로토콜을 사용했고, 나머지 두 접근법은 class 0만 제거하여 7-class입니다. 클래스 수가 적으면 일반적으로 정확도가 더 높게 나옵니다.
+또한 Cowork(Claude)은 class 0(unmarked)과 class 7(희소)을 제거한 6-class 프로토콜을 사용했고, 나머지 두 접근법은 class 0만 제거하여 7-class입니다. 클래스 수가 적으면 일반적으로 정확도가 더 높게 나옵니다.
 
 ## 폴더 구조
 
@@ -37,17 +37,17 @@ emg-gesture-classification/
 ├── README.md
 ├── .gitignore
 │
-├── 01_gemini/                       # 사람이 직접 + Gemini 도움받아 작성
+├── 01_gemini/                       # Gemini(chat) + 본인 (주피터 노트북 직접 작성)
 │   ├── emg_gesture_gm_v1.ipynb     # 1D-CNN baseline (91.51%)
 │   └── emg_gesture_gm_v2.ipynb     # CNN + BiLSTM (93.18%)
 │
-├── 02_antigravity/                  # Google Antigravity 에이전트 산출물
+├── 02_antigravity/                  # Antigravity(Gemini) 에이전트 산출물
 │   ├── README.md
 │   ├── preprocess.py               # 윈도우 200, step 50, sklearn 사용
 │   ├── train.py                    # 1D-CNN, PyTorch, 96.08%
 │   └── report.txt
 │
-└── 03_claude_cowork/                # Claude Cowork 에이전트 산출물
+└── 03_claude_cowork/                # Cowork(Claude) 에이전트 산출물
     ├── README.md
     ├── requirements.txt
     ├── LICENSE
@@ -69,7 +69,7 @@ emg-gesture-classification/
 
 ## 각 접근법의 특징 요약
 
-### Gemini (직접, v1 → v2)
+### Gemini(chat) + 본인 (v1 → v2)
 
 가장 학구적인 접근. 같은 데이터/protocol을 유지하면서 모델만 업그레이드.
 
@@ -80,7 +80,7 @@ emg-gesture-classification/
 
 `emg_gesture_gm_v1.ipynb`, `emg_gesture_gm_v2.ipynb` 참고.
 
-### Antigravity (에이전트)
+### Antigravity(Gemini) (에이전트)
 
 가장 무난한 PyTorch 표준 1D-CNN.
 
@@ -91,7 +91,7 @@ emg-gesture-classification/
 
 `02_antigravity/` 폴더 참고.
 
-### Claude Cowork (에이전트)
+### Cowork(Claude) (에이전트)
 
 라이브러리 설치가 막힌 환경 (PyTorch/sklearn 사용 불가)에서 **순수 numpy로** 전부 구현. 1D-CNN 대신 핸드크래프트 시간/주파수 특성 + MLP 채택.
 
@@ -106,10 +106,10 @@ emg-gesture-classification/
 
 ## 실험에서 얻은 인사이트
 
-1. **에이전트 vs 사람-주도 LLM**: 사람이 흐름을 통제한 Gemini 작업은 더 엄격한 평가 프로토콜을 자연스럽게 채택했고, 에이전트들은 더 쉬운 protocol을 (특별한 지시 없이) 자동으로 선택했습니다. 정확도 숫자만 비교하면 에이전트가 더 잘 한 것처럼 보이지만, **평가 설계의 엄밀함은 사람이 직접 한 쪽이 더 좋았습니다.**
-2. **환경 제약이 다른 해법을 낳음**: Cowork는 라이브러리 설치가 막혀서 numpy만으로 풀어야 했고, 그 결과 1D-CNN 대신 핸드크래프트 특성 + MLP라는 전혀 다른 접근으로 갔습니다.
-3. **도메인 지식이 모델보다 중요할 때가 있음**: Cowork가 정확도를 74% → 97%로 올린 결정적 변화는 모델 변경이 아니라 **class 0의 의미를 정확히 이해**한 것 (class 0과 class 1이 모두 "rest"라 의미적으로 중복)이었습니다.
-4. **모델 복잡도와 결과**: Antigravity의 거대한 CNN과 Cowork의 가벼운 MLP가 비슷한 정확도를 보였습니다. 다만 두 결과 모두 윈도우 무작위 분할의 값이라 일반화 성능으로 읽으면 안 됩니다.
+1. **에이전트 vs 사람-주도 LLM**: 사람이 흐름을 통제한 Gemini(chat) + 본인 작업은 더 엄격한 평가 프로토콜을 자연스럽게 채택했고, 에이전트들은 더 쉬운 protocol을 (특별한 지시 없이) 자동으로 선택했습니다. 정확도 숫자만 비교하면 에이전트가 더 잘 한 것처럼 보이지만, **평가 설계의 엄밀함은 사람이 직접 한 쪽이 더 좋았습니다.**
+2. **환경 제약이 다른 해법을 낳음**: Cowork(Claude)는 라이브러리 설치가 막혀서 numpy만으로 풀어야 했고, 그 결과 1D-CNN 대신 핸드크래프트 특성 + MLP라는 전혀 다른 접근으로 갔습니다.
+3. **도메인 지식이 모델보다 중요할 때가 있음**: Cowork(Claude)가 정확도를 74% → 97%로 올린 결정적 변화는 모델 변경이 아니라 **class 0의 의미를 정확히 이해**한 것 (class 0과 class 1이 모두 "rest"라 의미적으로 중복)이었습니다.
+4. **모델 복잡도와 결과**: Antigravity(Gemini)의 거대한 CNN과 Cowork(Claude)의 가벼운 MLP가 비슷한 정확도를 보였습니다. 다만 두 결과 모두 윈도우 무작위 분할의 값이라 일반화 성능으로 읽으면 안 됩니다.
 
 ## 데이터셋
 
