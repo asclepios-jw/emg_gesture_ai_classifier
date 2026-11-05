@@ -39,14 +39,13 @@ emg-gesture-classification/
 │
 ├── 01_gemini/                       # 사람이 직접 + Gemini 도움받아 작성
 │   ├── emg_gesture_gm_v1.ipynb     # 1D-CNN baseline (91.51%)
-│   └── emg_gesture_gm_v2.ipynb     # CNN + BiLSTM SOTA (93.18%)
+│   └── emg_gesture_gm_v2.ipynb     # CNN + BiLSTM (93.18%)
 │
 ├── 02_antigravity/                  # Google Antigravity 에이전트 산출물
 │   ├── README.md
 │   ├── preprocess.py               # 윈도우 200, step 50, sklearn 사용
 │   ├── train.py                    # 1D-CNN, PyTorch, 96.08%
-│   ├── report.txt
-│   └── confusion_matrix.png
+│   └── report.txt
 │
 └── 03_claude_cowork/                # Claude Cowork 에이전트 산출물
     ├── README.md
@@ -87,7 +86,7 @@ emg-gesture-classification/
 
 - 윈도우 200/step 50, sklearn `train_test_split` 사용 (random shuffle → mixed-subject)
 - 모델: Conv 128 → 256 → 512 + Dense 1024, Dropout/BatchNorm 풍부
-- AdamW + ReduceLROnPlateau, 40 epoch
+- Adam + ReduceLROnPlateau, 최대 40 epoch
 - 결과: 96.08%
 
 `02_antigravity/` 폴더 참고.
@@ -110,7 +109,7 @@ emg-gesture-classification/
 1. **에이전트 vs 사람-주도 LLM**: 사람이 흐름을 통제한 Gemini 작업은 더 엄격한 평가 프로토콜을 자연스럽게 채택했고, 에이전트들은 더 쉬운 protocol을 (특별한 지시 없이) 자동으로 선택했습니다. 정확도 숫자만 비교하면 에이전트가 더 잘 한 것처럼 보이지만, **평가 설계의 엄밀함은 사람이 직접 한 쪽이 더 좋았습니다.**
 2. **환경 제약이 다른 해법을 낳음**: Cowork는 라이브러리 설치가 막혀서 numpy만으로 풀어야 했고, 그 결과 1D-CNN 대신 핸드크래프트 특성 + MLP라는 전혀 다른 접근으로 갔습니다.
 3. **도메인 지식이 모델보다 중요할 때가 있음**: Cowork가 정확도를 74% → 97%로 올린 결정적 변화는 모델 변경이 아니라 **class 0의 의미를 정확히 이해**한 것 (class 0과 class 1이 모두 "rest"라 의미적으로 중복)이었습니다.
-4. **모델 복잡도와 결과**: Antigravity의 거대한 CNN과 Cowork의 가벼운 MLP가 비슷한 정확도를 보였습니다. 데이터 규모와 feature 품질이 충분하면 단순 모델로도 SOTA에 근접 가능.
+4. **모델 복잡도와 결과**: Antigravity의 거대한 CNN과 Cowork의 가벼운 MLP가 비슷한 정확도를 보였습니다. 다만 두 결과 모두 윈도우 무작위 분할의 값이라 일반화 성능으로 읽으면 안 됩니다.
 
 ## 데이터셋
 
